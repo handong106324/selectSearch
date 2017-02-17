@@ -481,17 +481,36 @@
 
 						var $this = $(this),
 							text = $.trim($this.text()).toLowerCase();
-						text = ConvertPinyin(text);
+						var oldText = text;
 						var ok = true;
+
+						var pinYinTextInfo = ConvertPinyin(text);
+
 						var chars = needle.split("");
-						for (var i = chars.length - 1; i >= 0; i--) {
-							console.log(text)
-							if (text.toString().indexOf(chars[i]) == -1 || text.toString().split(chars[i]).length < needle.split(chars[i]).length) {
-								ok = false;
-							};
-						};
+						//chars 每个字母都能找到,顺序找
+						var needInfo = new Array(256);
+						for (var i = 0 ; i< chars.length;i ++) {
+							var ccount = needInfo[chars[i]];
+							if (ccount) {
+								if (ccount ==0 || ccount > countChar(chars[i], needle)) {
+									ok = false;
+									break;
+								}
+							} else {
+								var count = searchChar(chars[i], pinYinTextInfo);
+								needInfo[chars[i]] = count;
+								if (count == 0) {
+									ok = false;
+									break
+								}
+							}
+
+						}
+
+
+
 						/* Found */
-						if(ok){
+						if(ok || (oldText.toString().indexOf(needle) != -1)){
 																
 							/**
 							 * Wrap the selection
@@ -812,3 +831,33 @@
 	$.fn[ pluginName ].instances = [];
 
 }));
+
+
+function searchChar(ch, array) {
+	var time = 0;
+	for (var hanziIndex in array) {
+		var hanziPinYinArray = array[hanziIndex];
+		var maxTime = countMax(ch, hanziPinYinArray);
+		time += maxTime;
+	}
+	return time;
+}
+
+function countMax(ch,array) {
+	var time = 0;
+	for (var pyId in array) {
+
+		var count = countChar(ch,array[pyId])
+		if (count > time) {
+			time = count;
+		}
+	}
+	return time;
+}
+
+function countChar(ch, str) {
+	if(!str) return 0;
+	var regex = new RegExp(ch, 'g')
+	var result = str.match(regex);
+	return !result ? 0 : result.length;
+}
