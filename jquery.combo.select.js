@@ -485,7 +485,7 @@
 						var ok = true;
 						var chars = needle.split("");
 						for (var i = chars.length - 1; i >= 0; i--) {
-							console.log()
+							console.log(text)
 							if (text.toString().indexOf(chars[i]) == -1 || text.toString().split(chars[i]).length < needle.split(chars[i]).length) {
 								ok = false;
 							};
